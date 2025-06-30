@@ -35,7 +35,7 @@ def sample_trajectory(env, policy, max_path_length, render=False):
         # TODO use the most recent ob to decide what to do
         ac = policy.forward(ptu.from_numpy(ob)).rsample()  # HINT: this is a numpy array
         ac = ptu.to_numpy(ac)
-        ac = ac[0]
+        #ac = ac[0]
 
         # TODO: take that action and get reward and next ob
         next_ob, rew, done, _ = env.step(ac)

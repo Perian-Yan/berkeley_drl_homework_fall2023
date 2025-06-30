@@ -137,7 +137,7 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         
         mean = self.mean_net(observation)
         std = torch.exp(self.logstd)
-        normal_dist = torch.distribution.Normal(mean, std)
+        normal_dist = torch.distributions.Normal(mean, std)
         return normal_dist
         # raise NotImplementedError
 

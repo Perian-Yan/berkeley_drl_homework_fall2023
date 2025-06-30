@@ -20,7 +20,10 @@ A. (Recommended) Install with conda:
 	```
 	source activate cs285
 	```
-
+	I use
+	```
+	conda activate cs285
+	```
 	4. Install the requirements into this conda environment
 	```
 	pip install -r requirements.txt
@@ -52,3 +55,13 @@ These can be resolved with:
 ```
 export MUJOCO_GL=egl
 ```
+
+
+![alt text](image.png)
+
+conda install swig
+
+![alt text](image-1.png)
+
+RuntimeError: module compiled against ABI version 0x1000009 but this version of numpy is 0x2000000
+
