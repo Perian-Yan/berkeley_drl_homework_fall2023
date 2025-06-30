@@ -71,8 +71,8 @@ def run_training_loop(params):
 
     assert isinstance(env.action_space, gym.spaces.Box), "Environment must be continuous"
     # Observation and action sizes
-    ob_dim = env.observation_space.shape[0]
-    ac_dim = env.action_space.shape[0]
+    ob_dim = env.observation_space.shape[0]  # e.g. Ant-v4 observation_space.shape = (27, ) for joints states; Box for continuous observation
+    ac_dim = env.action_space.shape[0]  # action_space.shape = (8, ); Box for continuous action
 
     # simulation timestep, will be used for video saving
     if 'model' in dir(env):
@@ -134,7 +134,7 @@ def run_training_loop(params):
             # TODO: collect `params['batch_size']` transitions
             # HINT: use utils.sample_trajectories
             # TODO: implement missing parts of utils.sample_trajectory
-            paths, envsteps_this_batch = TODO
+            paths, envsteps_this_batch = utils.sample_trajectories(env, actor, params['batch_size'], max_path_length=params['ep_len'])  # ep_len is the max episode length
 
             # relabel the collected obs with actions from a provided expert policy
             if params['do_dagger']:
@@ -143,7 +143,9 @@ def run_training_loop(params):
                 # TODO: relabel collected obsevations (from our policy) with labels from expert policy
                 # HINT: query the policy (using the get_action function) with paths[i]["observation"]
                 # and replace paths[i]["action"] with these expert labels
-                paths = TODO
+                for i in range(len(paths)):
+                    action_relabel = expert_policy.get_action(paths[i]["observation"])
+                    paths[i]["action"] = action_relabel
 
         total_envsteps += envsteps_this_batch
         # add collected data to replay buffer
@@ -159,7 +161,8 @@ def run_training_loop(params):
           # HINT2: use np.random.permutation to sample random indices
           # HINT3: return corresponding data points from each array (i.e., not different indices from each array)
           # for imitation learning, we only need observations and actions.  
-          ob_batch, ac_batch = TODO
+          sub = np.random.permutations(params['train_batch_size'])
+          ob_batch, ac_batch =  ptu.from_numpy(replay_buffer.obs[sub]), ptu.from_numpy(replay_buffer.acs[sub])
 
           # use the sampled data to train an agent
           train_log = actor.update(ob_batch, ac_batch)
@@ -212,7 +215,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--expert_policy_file', '-epf', type=str, required=True)  # relative to where you're running this script from
-    parser.add_argument('--expert_data', '-ed', type=str, required=True) #relative to where you're running this script from
+    parser.add_argument('--expert_data', '-ed', type=str, required=True) # relative to where you're running this script from
     parser.add_argument('--env_name', '-env', type=str, help=f'choices: {", ".join(MJ_ENV_NAMES)}', required=True)
     parser.add_argument('--exp_name', '-exp', type=str, default='pick an experiment name', required=True)
     parser.add_argument('--do_dagger', action='store_true')
@@ -221,7 +224,7 @@ def main():
     parser.add_argument('--num_agent_train_steps_per_iter', type=int, default=1000)  # number of gradient steps for training policy (per iter in n_iter)
     parser.add_argument('--n_iter', '-n', type=int, default=1)
 
-    parser.add_argument('--batch_size', type=int, default=1000)  # training data collected (in the env) during each iteration
+    parser.add_argument('--batch_size', type=int, default=1000)  # training data collected (in the env) during each iteration 
     parser.add_argument('--eval_batch_size', type=int,
                         default=1000)  # eval data collected (in the env) for logging metrics
     parser.add_argument('--train_batch_size', type=int,

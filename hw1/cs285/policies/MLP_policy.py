@@ -50,7 +50,7 @@ def build_mlp(
         in_size = size
     layers.append(nn.Linear(in_size, output_size))
 
-    mlp = nn.Sequential(*layers)
+    mlp = nn.Sequential(*layers)  # unpacking layers; same as nn.Sequential(nn.Linear, nn.Tanh(), nn.Linear, ...)
     return mlp
 
 
@@ -94,19 +94,24 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         self.training = training
         self.nn_baseline = nn_baseline
 
+        # for continuous action, the output is Gaussion distribution (mean and variance)
         self.mean_net = build_mlp(
             input_size=self.ob_dim,
             output_size=self.ac_dim,
             n_layers=self.n_layers, size=self.size,
         )
         self.mean_net.to(ptu.device)
+
+        # log of standard deviation
+        # std is always positive, but logstd can be negative or positive. 
+        # This allows network to freely update logstd without constraints.
         self.logstd = nn.Parameter(
 
             torch.zeros(self.ac_dim, dtype=torch.float32, device=ptu.device)
         )
         self.logstd.to(ptu.device)
         self.optimizer = optim.Adam(
-            itertools.chain([self.logstd], self.mean_net.parameters()),
+            itertools.chain([self.logstd], self.mean_net.parameters()),  # update both logstd and parameters in the mean network
             self.learning_rate
         )
 
@@ -129,7 +134,12 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         # through it. For example, you can return a torch.FloatTensor. You can also
         # return more flexible objects, such as a
         # `torch.distributions.Distribution` object. It's up to you!
-        raise NotImplementedError
+        
+        mean = self.mean_net(observation)
+        std = torch.exp(self.logstd)
+        normal_dist = torch.distribution.Normal(mean, std)
+        return normal_dist
+        # raise NotImplementedError
 
     def update(self, observations, actions):
         """
@@ -141,7 +151,13 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             dict: 'Training Loss': supervised learning loss
         """
         # TODO: update the policy and return the loss
-        loss = TODO
+        dist = self.forward(observations)
+        act = dist.rsample()  # use rsample to enable differentiation, not simple()
+        criterion = nn.MSELoss()
+        loss = criterion(act, actions)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
         return {
             # You can add extra logging information here, but keep this line
             'Training Loss': ptu.to_numpy(loss),

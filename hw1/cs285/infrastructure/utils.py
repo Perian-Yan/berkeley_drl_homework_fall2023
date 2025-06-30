@@ -33,11 +33,12 @@ def sample_trajectory(env, policy, max_path_length, render=False):
             image_obs.append(cv2.resize(img, dsize=(250, 250), interpolation=cv2.INTER_CUBIC))
     
         # TODO use the most recent ob to decide what to do
-        ac = TODO # HINT: this is a numpy array
+        ac = policy.forward(ptu.from_numpy(ob)).rsample()  # HINT: this is a numpy array
+        ac = ptu.to_numpy(ac)
         ac = ac[0]
 
         # TODO: take that action and get reward and next ob
-        next_ob, rew, done, _ = TODO
+        next_ob, rew, done, _ = env.step(ac)
         
         # TODO rollout can end due to done, or due to max_path_length
         steps += 1
@@ -69,6 +70,7 @@ def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, r
 
     timesteps_this_batch = 0
     paths = []
+    # need to collect enough number (min_timesteps_per_batch) of transtions
     while timesteps_this_batch < min_timesteps_per_batch:
 
         #collect rollout
@@ -76,7 +78,7 @@ def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, r
         paths.append(path)
 
         #count steps
-        timesteps_this_batch += get_pathlength(path)
+        timesteps_this_batch += get_pathlength(path)  # len(path["reward"]); number of transitions
 
     return paths, timesteps_this_batch
 
