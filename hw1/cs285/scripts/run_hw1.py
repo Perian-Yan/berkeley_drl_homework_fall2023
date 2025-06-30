@@ -17,15 +17,15 @@ from cs285.infrastructure import pytorch_util as ptu
 from cs285.infrastructure import utils
 from cs285.infrastructure.logger import Logger
 from cs285.infrastructure.replay_buffer import ReplayBuffer
-from cs285.policies.MLP_policy import MLPPolicySL
-from cs285.policies.loaded_gaussian_policy import LoadedGaussianPolicy
+from cs285.policies.MLP_policy import MLPPolicySL   # MLP policy for Supervised Learning
+from cs285.policies.loaded_gaussian_policy import LoadedGaussianPolicy  # expert policy
 
 
 # how many rollouts to save as videos to tensorboard
 MAX_NVIDEO = 2
 MAX_VIDEO_LEN = 40  # we overwrite this in the code below
 
-MJ_ENV_NAMES = ["Ant-v4", "Walker2d-v4", "HalfCheetah-v4", "Hopper-v4"]
+MJ_ENV_NAMES = ["Ant-v4", "Walker2d-v4", "HalfCheetah-v4", "Hopper-v4"]  # mujoco envs
 
 
 def run_training_loop(params):
@@ -111,7 +111,7 @@ def run_training_loop(params):
 
     # init vars at beginning of training
     total_envsteps = 0
-    start_time = time.time()
+    start_time = time.time()  # get the current time
 
     for itr in range(params['n_iter']):
         print("\n\n********** Iteration %i ************"%itr)
@@ -122,9 +122,11 @@ def run_training_loop(params):
         log_metrics = (itr % params['scalar_log_freq'] == 0)
 
         print("\nCollecting data to be used for training...")
+        # Only one iteration for Behavior Cloning supervised learning with expert data;
+        # More than one iter for DAgger.
         if itr == 0:
             # BC training from expert data.
-            paths = pickle.load(open(params['expert_data'], 'rb'))
+            paths = pickle.load(open(params['expert_data'], 'rb'))  # open the file in binary read mode
             envsteps_this_batch = 0
         else:
             # DAGGER training from sampled data relabeled by expert
