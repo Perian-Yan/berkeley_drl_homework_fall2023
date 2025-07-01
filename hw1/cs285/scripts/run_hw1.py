@@ -73,6 +73,8 @@ def run_training_loop(params):
     # Observation and action sizes
     ob_dim = env.observation_space.shape[0]  # e.g. Ant-v4 observation_space.shape = (27, ) for joints states; Box for continuous observation
     ac_dim = env.action_space.shape[0]  # action_space.shape = (8, ); Box for continuous action
+    print("obs dim = ", ob_dim)
+    print("act dim = ", ac_dim)
 
     # simulation timestep, will be used for video saving
     if 'model' in dir(env):
@@ -127,6 +129,7 @@ def run_training_loop(params):
         if itr == 0:
             # BC training from expert data.
             paths = pickle.load(open(params['expert_data'], 'rb'))  # open the file in binary read mode
+            print("num of transitions in the expert's paths = ", len(paths[0]['observation']))
             envsteps_this_batch = 0
         else:
             # DAGGER training from sampled data relabeled by expert
@@ -150,7 +153,7 @@ def run_training_loop(params):
         total_envsteps += envsteps_this_batch
         # add collected data to replay buffer
         replay_buffer.add_rollouts(paths)
-
+        print("replay buffer = ", replay_buffer.obs.shape[0])
         # train agent (using sampled data from replay buffer)
         print('\nTraining agent using sampled data from replay buffer...')
         training_logs = []
