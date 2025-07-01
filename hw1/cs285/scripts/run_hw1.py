@@ -176,7 +176,10 @@ def run_training_loop(params):
             print('\nCollecting video rollouts eval')
             eval_video_paths = utils.sample_n_trajectories(
                 env, actor, MAX_NVIDEO, MAX_VIDEO_LEN, True)
-
+            print("len of paths")
+            print(len(eval_video_paths))
+            print("len of path")
+            print(len(eval_video_paths[0]["observation"]), len(eval_video_paths[1]["observation"]))
             # save videos
             if eval_video_paths is not None:
                 logger.log_paths_as_videos(
@@ -220,7 +223,7 @@ def main():
     parser.add_argument('--env_name', '-env', type=str, help=f'choices: {", ".join(MJ_ENV_NAMES)}', required=True)
     parser.add_argument('--exp_name', '-exp', type=str, default='pick an experiment name', required=True)
     parser.add_argument('--do_dagger', action='store_true')
-    parser.add_argument('--ep_len', type=int)
+    parser.add_argument('--ep_len', type=int, default=1000)
 
     parser.add_argument('--num_agent_train_steps_per_iter', type=int, default=1000)  # number of gradient steps for training policy (per iter in n_iter)
     parser.add_argument('--n_iter', '-n', type=int, default=1)
