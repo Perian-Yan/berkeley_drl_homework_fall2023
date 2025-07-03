@@ -146,6 +146,7 @@ def run_training_loop(params):
                 # TODO: relabel collected obsevations (from our policy) with labels from expert policy
                 # HINT: query the policy (using the get_action function) with paths[i]["observation"]
                 # and replace paths[i]["action"] with these expert labels
+                print('len(paths) every itr = ', len(paths))
                 for i in range(len(paths)):
                     action_relabel = expert_policy.get_action(paths[i]["observation"])
                     paths[i]["action"] = action_relabel
