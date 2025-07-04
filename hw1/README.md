@@ -36,9 +36,12 @@ python cs285/scripts/run_hw1.py
 	--video_log_freq -1
 ```
 
+For the evaluation, I use `eval_batch_size = 5000` and `ep_len = 1000`. This corresponds to approximately 5 rollouts.
+
 ```
 python cs285/scripts/run_hw1.py --expert_policy_file cs285/policies/experts/Ant.pkl --env_name Ant-v4 --exp_name bc_ant --n_iter 1 --expert_data cs285/expert_data/expert_data_Ant-v4.pkl --video_log_freq -1 --eval_batch_size 5000
 ```
+
 Make sure to also try another environment.
 See the homework PDF for more details on what else you need to run.
 To generate videos of the policy, remove the `--video_log_freq -1` flag.
@@ -60,6 +63,14 @@ python cs285/scripts/run_hw1.py
 Make sure to also try another environment.
 See the homework PDF for more details on what else you need to run.
 
+I generate videos every 3 iterations (at `itr = 0, 3, 6, 9`):
+
+```
+python cs285/scripts/run_hw1.py --expert_policy_file cs285/policies/experts/Ant.pkl --env_name Ant-v4 --exp_name dagger_ant --n_iter 10 --do_dagger --expert_data cs285/expert_data/expert_data_Ant-v4.pkl --eval_batch_size 5000 --video_log_freq 3 
+```
+
+In step 0 (DAgger hasn't been used, same results as BC), the Walker2d cannot walk and easily fall. In step 3 (`itr = 3`), when DAgger is used, the Walker2d can already walk smoothly.
+
 ## Visualization the saved tensorboard event file:
 
 You can visualize your runs using tensorboard:
@@ -73,6 +84,13 @@ You can choose to visualize specific runs with a comma-separated list:
 ```
 tensorboard --logdir data/run1,data/run2,data/run3...
 ```
+
+The above command doesn't work for me. For visualizing several tfevents, I put the folders, for example, `q2_dagger_ant_...` and `q2_dagger_halfcheetah_...` under a new folder `vidoe_dagger`,
+and run
+```
+tensorboard --logdir video_data
+```
+Tensorboard will search and run all the tfevents under the folder `video_data`.
 
 If running on Colab, you will be using the `%tensorboard` [line magic](https://ipython.readthedocs.io/en/stable/interactive/magics.html) to do the same thing; see the [notebook](cs285/scripts/run_hw1.ipynb) for more details.
 
