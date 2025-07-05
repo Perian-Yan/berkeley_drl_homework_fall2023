@@ -47,6 +47,7 @@ See the homework PDF for more details on what else you need to run.
 To generate videos of the policy, remove the `--video_log_freq -1` flag.
 
 During the evaluation, two trajectories are sampled. The video below shows the learned policy (BC) for the four environments.
+https://www.bilibili.com/video/BV1e439z9EhC/?spm_id_from=333.1387.homepage.video_card.click&vd_source=c15057271a519c1b36b7cc925e8cd5df
 
 ### Section 2 (DAgger)
 Command for section 1:
@@ -70,6 +71,8 @@ python cs285/scripts/run_hw1.py --expert_policy_file cs285/policies/experts/Ant.
 ```
 
 In step 0 (DAgger hasn't been used, same results as BC), the Walker2d cannot walk and easily fall. In step 3 (`itr = 3`), when DAgger is used, the Walker2d can already walk smoothly.
+
+https://www.bilibili.com/video/BV1V439z9EXC/?spm_id_from=333.1387.homepage.video_card.click&vd_source=c15057271a519c1b36b7cc925e8cd5df
 
 ## Visualization the saved tensorboard event file:
 
