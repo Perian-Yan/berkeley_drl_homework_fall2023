@@ -56,12 +56,23 @@ These can be resolved with:
 export MUJOCO_GL=egl
 ```
 
-
+I encounter the error:
 ![alt text](image.png)
 
+I use 
+```
 conda install swig
+```
+and install the cpp build tools at
+https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/
 
+Then, install the `requirements` again.
+
+I also got the error:
 ![alt text](image-1.png)
 
+```
 RuntimeError: module compiled against ABI version 0x1000009 but this version of numpy is 0x2000000
+```
 
+This can be solved by reinstall numpy with an old version like 1.26.4.
