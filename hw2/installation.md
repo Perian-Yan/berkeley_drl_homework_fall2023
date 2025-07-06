@@ -13,6 +13,8 @@ You need to open a new terminal for that path change to take place (to be able t
 conda create -n cs285 python=3.10
 ```
 
+In homework1, the version of python is 3.9. Therefore, I create a new conda env named `cs285hw2` and install the requirements again.
+
 3. Activate the environment (do this every time you open a new terminal and want to run code):
 ```
 conda activate cs285
