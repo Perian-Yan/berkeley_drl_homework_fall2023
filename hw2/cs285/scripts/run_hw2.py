@@ -75,10 +75,16 @@ def run_training_loop(args):
 
         # trajs should be a list of dictionaries of NumPy arrays, where each dictionary corresponds to a trajectory.
         # this line converts this into a single dictionary of lists of NumPy arrays.
+        # trajs_dict = {"observation": [ [o1,o2,...oT], [o1,o2,...,oT],...[] ],
+        #               "action"：[ [a1,a2,...aT], [a1,a2,...,aT],...[] ]，
+        #                 ...}
         trajs_dict = {k: [traj[k] for traj in trajs] for k in trajs[0]}  # k for keys in the traj dict, e.g., "observation", "reward", "action", etc.
 
         # TODO: train the agent using the sampled trajectories and the agent's update function
-        train_info: dict = None  # agent.update()  use PGAGent().update()
+        train_info: dict = agent.update(obs=trajs_dict["observation"],
+                                        actions=trajs_dict["action"],
+                                        rewards=trajs_dict["reward"],
+                                        terminals=trajs_dict["terminal"])  # use PGAGent().update() -> dict
 
         if itr % args.scalar_log_freq == 0:
             # save eval metrics
