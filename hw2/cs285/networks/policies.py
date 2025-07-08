@@ -78,13 +78,17 @@ class MLPPolicy(nn.Module):
             # logits are the unscaled output of the MLP, which need to enter softmax layer to become probabilities.
             act_logits = self.logits_net(obs)
             act_probs = F.softmax(act_logits, dim=-1)
-            dist = torch.distributions.Categorical(probs = act_probs)
+            dist = torch.distributions.Categorical(probs=act_probs)
 
         else:
             # TODO: define the forward pass for a policy with a continuous action space.
             mean = self.mean_net(obs)
-            std = torch.exp(self.logstd)
+            std = torch.exp(self.logstd)           
             dist = torch.distributions.Normal(mean, std)
+            # std_tril = torch.diag(std)
+            # batch_dim = obs.shape[0]
+            # batch_scale_tril = std_tril.repeat(batch_dim,1,1)
+            # dist = torch.distributions.MultivariateNormal(mean, batch_scale_tril)
 
         return dist
 
@@ -109,7 +113,16 @@ class MLPPolicyPG(MLPPolicy):
         
         # TODO: implement the policy gradient actor update.
         dist = self.forward(obs)
-        log_probs = dist.log_prob(actions)
+        if self.discrete:
+            log_probs = dist.log_prob(actions)
+        else:
+            log_probs = dist.log_prob(actions).sum(dim=1)
+            # log_probs = dist.log_prob(actions)
+        print("action shape = ", actions.shape)
+        print(self.discrete)
+        print(advantages.shape)
+        print(log_probs.shape)
+        print(log_probs)
         loss = -(log_probs * advantages).sum()
 
         self.optimizer.zero_grad()

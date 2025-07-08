@@ -79,7 +79,8 @@ class PGAgent(nn.Module):
         advantages: np.ndarray = self._estimate_advantage(
             obs, rewards, q_values, terminals
         )
-
+        print("act shape", actions.shape)
+        print("obs shape", obs.shape)
         # step 3: use all datapoints (s_t, a_t, adv_t) to update the PG actor/policy
         # TODO: update the PG actor/policy network once using the advantages
         info: dict = self.actor.update(obs, actions, advantages)  # info about actor loss
@@ -87,7 +88,8 @@ class PGAgent(nn.Module):
         # step 4: if needed, use all datapoints (s_t, a_t, q_t) to update the PG critic/baseline
         if self.critic is not None:
             # TODO: perform `self.baseline_gradient_steps` updates to the critic/baseline network
-            critic_info: dict = None
+            for i in range(self.baseline_gradient_steps):
+                critic_info: dict = self.critic.update(obs, q_values)
 
             info.update(critic_info)
 
@@ -127,7 +129,9 @@ class PGAgent(nn.Module):
             advantages = q_values
         else:
             # TODO: run the critic and use it as a baseline
-            values = ptu.to_numpy(self.critic.forward(obs))
+            values = ptu.to_numpy(self.critic.forward(ptu.from_numpy(obs))).squeeze()
+            # values.shape is (batch_size,1), q_values.shape is (batch_size,)
+            # Need to use squeeze()
             assert values.shape == q_values.shape
 
             if self.gae_lambda is None:
@@ -135,24 +139,29 @@ class PGAgent(nn.Module):
                 advantages = q_values - values  # A(s,a) = Q(s,a) - V(s)
             else:
                 # TODO: implement GAE
-                batch_size = obs.shape[0]
+                batch_size = obs.shape[0]  # obs.shape is (batch_size, dim_obs)
 
                 # HINT: append a dummy T+1 value for simpler recursive calculation
                 values = np.append(values, [0])
-                advantages = np.zeros(batch_size + 1)
+                advantages = np.zeros(batch_size + 1)   # values and advantages have T+1 entries, 0 ~ T
 
-                for i in reversed(range(batch_size)):
+                for i in reversed(range(batch_size)):  # batch_size is T, i = 0 ~ T-1
                     # TODO: recursively compute advantage estimates starting from timestep T.
                     # HINT: use terminals to handle edge cases. terminals[i] is 1 if the state is the last in its
                     # trajectory, and 0 otherwise.
-                    pass
+                    if not terminals[i]:
+                        delta = rewards[i] - values[i] + self.gamma*values[i+1]
+                        advantages[i] = delta + self.gamma*self.gae_lambda*advantages[i+1]
+                    else:
+                        delta = rewards[i] - values[i]
+                        advantages[i] = delta 
 
                 # remove dummy advantage
                 advantages = advantages[:-1]
 
         # TODO: normalize the advantages to have a mean of zero and a standard deviation of one within the batch
         if self.normalize_advantages:
-            pass
+            advantages = (advantages - advantages.mean()) / (advantages.std()+1e-8)
 
         return advantages
 
@@ -166,7 +175,7 @@ class PGAgent(nn.Module):
         """
         G = 0
         for t in reversed(range(len(rewards))):
-            G = self.gamma*G + rewards(t)
+            G = self.gamma*G + rewards[t]
         return [G] * len(rewards)
 
 
@@ -178,6 +187,6 @@ class PGAgent(nn.Module):
         Gt = []
         G = 0
         for t in reversed(range(len(rewards))):
-            G = self.gamma*G + rewards(t)
+            G = self.gamma*G + rewards[t]
             Gt.insert(0, G)  # insert at the first place
         return Gt
