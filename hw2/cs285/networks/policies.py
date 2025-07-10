@@ -118,11 +118,7 @@ class MLPPolicyPG(MLPPolicy):
         else:
             log_probs = dist.log_prob(actions).sum(dim=1)
             # log_probs = dist.log_prob(actions)
-        print("action shape = ", actions.shape)
-        print(self.discrete)
-        print(advantages.shape)
-        print(log_probs.shape)
-        print(log_probs)
+
         loss = -(log_probs * advantages).sum()
 
         self.optimizer.zero_grad()

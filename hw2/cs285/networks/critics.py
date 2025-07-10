@@ -44,7 +44,7 @@ class ValueCritic(nn.Module):
         q_values = ptu.from_numpy(q_values)
 
         # TODO: update the critic using the observations and q_values
-        values_pred = self.forward(obs).squeeze()  # if not squeeze -> Warning: values_pred is (batch_size,1) while q_values is (batch_size)
+        values_pred = self.forward(obs).squeeze()  # if not squeeze -> Warning: values_pred is (batch_size,1) while q_values is (batch_size). May cause broadcasting error.
         loss = F.mse_loss(values_pred, q_values)
 
         self.optimizer.zero_grad()

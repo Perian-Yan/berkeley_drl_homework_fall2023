@@ -79,8 +79,7 @@ class PGAgent(nn.Module):
         advantages: np.ndarray = self._estimate_advantage(
             obs, rewards, q_values, terminals
         )
-        print("act shape", actions.shape)
-        print("obs shape", obs.shape)
+
         # step 3: use all datapoints (s_t, a_t, adv_t) to update the PG actor/policy
         # TODO: update the PG actor/policy network once using the advantages
         info: dict = self.actor.update(obs, actions, advantages)  # info about actor loss
